@@ -5,15 +5,25 @@
  */
 package com.tepach.forms;
 
+
+import com.tepach.clases.C_CrearBD;
 import com.tepach.clases.C_LeerBD;
+import java.awt.Desktop;
+import java.awt.Image;
+import java.awt.Toolkit;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JList;
+
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import jdk.nashorn.internal.scripts.JO;
+
 
 /**
  *
@@ -26,10 +36,22 @@ public class F_principal extends javax.swing.JFrame {
      */
     public F_principal() {
         initComponents();
+        
         contador();
+         
     }
+@Override
+    public Image getIconImage() {
+        Image retValue = Toolkit.getDefaultToolkit().
+                getImage(ClassLoader.getSystemResource("com/tepach/recursos/n.png"));
 
+
+        return retValue;
+    }
     C_LeerBD cl = new C_LeerBD();
+     C_CrearBD cb = new C_CrearBD();
+    ArrayList<String> data;
+    ArrayList<String> baseNueva;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -50,7 +72,11 @@ public class F_principal extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Generar UUID");
+        setIconImage(getIconImage());
 
+        jPanel1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+
+        jButton1.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
         jButton1.setText("Cargar BD");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -58,18 +84,27 @@ public class F_principal extends javax.swing.JFrame {
             }
         });
 
+        jList1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jList1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Carga la base de datos anterior", "para generar los nuevos UUID" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
-        jLabel1.setText("UUID");
+        jLabel1.setText("Generador de códigos UUID");
 
+        jLabel2.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         jLabel2.setText("N° De elementos: ");
 
+        jLabel3.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         jLabel3.setText("Ruta:");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -79,16 +114,17 @@ public class F_principal extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 741, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jButton1))
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
-                        .addComponent(jLabel2)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 364, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -100,7 +136,7 @@ public class F_principal extends javax.swing.JFrame {
                     .addComponent(jLabel2)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
                 .addContainerGap())
@@ -121,23 +157,34 @@ public class F_principal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String boton=jButton1.getText();
+        String boton = jButton1.getText();
         if (boton.contentEquals("Cargar BD")) {
             abrirArchivo();
-            jButton1.setText("Generar nuevos UUID");
-            boton=jButton1.getText();
-        }else if(boton.contentEquals("Generar nuevos UUID")){
-            
-            jButton1.setText("Guardar BD");
-            boton=jButton1.getText();
-        }else if(boton.contentEquals("Guardar BD")){
-        
+
+        } else if (boton.contentEquals("Generar nuevos UUID")) {
+            try {
+                int cant = Integer.parseInt(JOptionPane.showInputDialog(rootPane, "Ingresa la cantidad de folios a generar"));
+                generarBD(cant);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(rootPane, "Solo puedes ingresar números", "Erroren datos de entrada", JOptionPane.ERROR_MESSAGE);
+            } catch (IOException ex) {
+                Logger.getLogger(F_principal.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } else if (boton.contentEquals("Guardar BD")) {
+
         }
-        
+
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
+        // TODO add your handling code here:
+        JOptionPane.showMessageDialog(rootPane, jList1.getSelectedValue(),"UUID",JOptionPane.DEFAULT_OPTION);
+    }//GEN-LAST:event_jList1MouseClicked
+
     private void LlenarLista(String Ruta) {
         jLabel3.setText("Ruta: " + Ruta);
-        ArrayList<String> data = cl.foliosViejos(Ruta);
+        data = cl.foliosViejos(Ruta);
         DefaultListModel<String> model = new DefaultListModel<>();
 
         for (int i = 0; i < data.size(); i++) {
@@ -146,7 +193,7 @@ public class F_principal extends javax.swing.JFrame {
         jList1.setModel(model);
         contador();
     }
-
+    
     private void abrirArchivo() {
         String texto = null;
         JFileChooser busca = new JFileChooser();
@@ -161,6 +208,8 @@ public class F_principal extends javax.swing.JFrame {
                 File archivo = busca.getSelectedFile();
                 texto = archivo.getPath();
                 LlenarLista(texto);
+                jButton1.setText(cl.btn);
+
                 break;
 
             case JFileChooser.CANCEL_OPTION:
@@ -228,5 +277,22 @@ public class F_principal extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    
+    private void generarBD(int cantidad) throws IOException {
+       baseNueva=new ArrayList<>();
+        String uuid = cb.crearUUID();
+        for (int i = 0; i < cantidad; i++) {
+            if (!data.contains(uuid)) {
+                data.add(uuid);
+                baseNueva.add(uuid);
+            }
+            uuid = cb.crearUUID();
+        }
+        cb.creartxt(baseNueva);
+         JOptionPane.showMessageDialog(rootPane,"Base Creada");
+        jButton1.setText("Cargar BD");
+        File arch=new File(cb.nombreArchivo);
+        Desktop.getDesktop().open(arch);
+        jButton1.disable();
+    }
+
 }
